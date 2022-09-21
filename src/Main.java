@@ -8,8 +8,8 @@ public class Main {
         Product[] products = {new Product(40, "Хлеб"), new Product(70, "Молоко"),
                 new Product(150, "Сыр"), new Product(400, "Колбаса"),
                 new Product(170, "Печенье")};
-        File myFile = new File("basket.txt");
-        Basket basket = Basket.loadFromTxtFile(myFile);
+        File myFile = new File("basket.bin");
+        Basket basket = Basket.loadFromBinFile(myFile);
         if (!myFile.exists()) {
             try {
                 myFile.createNewFile();
@@ -52,7 +52,7 @@ public class Main {
                     basket.addToCart(prod, count);
                 }
                 basket.addToCart(prod, count);
-                basket.saveTxt(myFile);
+                basket.saveBin(myFile);
             } catch (NumberFormatException e) {
                 System.out.println("Ошибка ввода, вы ввели не число");
             }
@@ -61,3 +61,4 @@ public class Main {
         scanner.close();
     }
 }
+
