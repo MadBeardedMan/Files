@@ -8,16 +8,28 @@ public class Main {
         Product[] products = {new Product(40, "Хлеб"), new Product(70, "Молоко"),
                 new Product(150, "Сыр"), new Product(400, "Колбаса"),
                 new Product(170, "Печенье")};
-        File myFile = new File("basket.txt");
-        Basket basket = Basket.loadFromTxtFile(myFile);
-        if (!myFile.exists()) {
+        //File myFile = new File("basket.bin");
+        File log = new File("log.csv");
+        File jb = new File("basket.json");
+        Basket basket = Basket.loadJson(jb);
+        
+      /* if (!myFile.exists()) {
             try {
                 myFile.createNewFile();
                 basket = new Basket(products);
             } catch (IOException ex) {
                 System.out.println(ex.getMessage());
             }
+        }*/
+        if (!jb.exists()) {
+            try {
+                jb.createNewFile();
+                basket = new Basket(products);
+            } catch (IOException ex) {
+                System.out.println(ex.getMessage());
+            }
         }
+
         System.out.println("Добро пожаловать магазин! Обратите внимание на текущий ассортимент товаров:");
         for (int i = 0; i < products.length; i++) {
             System.out.println((i + 1) + ". " + products[i].getName() + " по цене: " + products[i].getPrice() + " руб.");
@@ -52,12 +64,15 @@ public class Main {
                     basket.addToCart(prod, count);
                 }
                 basket.addToCart(prod, count);
-                basket.saveTxt(myFile);
+                ClientLog.logProd(prod, count);
             } catch (NumberFormatException e) {
                 System.out.println("Ошибка ввода, вы ввели не число");
             }
         }
         basket.printCart();
+        ClientLog.exportAsCSV(log);
+        basket.saveJson(jb);
         scanner.close();
     }
 }
+

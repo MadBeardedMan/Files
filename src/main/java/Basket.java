@@ -1,19 +1,22 @@
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Scanner;
 
 public class Basket {
-    Map<Integer, Product> basket = new HashMap<>();
+    HashMap<Integer, Product> basket = new HashMap<>();
 
     public Basket(Product[] basket) {
         for (int i = 0; i < basket.length; i++) {
             this.basket.put(i, basket[i]);
         }
+    }
+
+    public Basket(HashMap<Integer, Product> basket) {
+        this.basket.putAll(basket);
     }
 
     static Basket loadFromTxtFile(File textFile) {
@@ -33,6 +36,17 @@ public class Basket {
         return new Basket(prd);
     }
 
+    static Basket loadFromBinFile(File file) {
+        HashMap<Integer, Product> basket = new HashMap<>();
+        try (FileInputStream fis = new FileInputStream(file);
+             ObjectInputStream ois = new ObjectInputStream(fis)) {
+            basket = (HashMap<Integer, Product>) ois.readObject();
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        return new Basket(basket);
+    }
+
     public void addToCart(int productNum, int amount) {
         Product prod = basket.get(productNum);
         prod.addCount(amount);
@@ -43,7 +57,7 @@ public class Basket {
         int summary = 0;
         System.out.println("Ваша корзина:");
         for (int i = 0; i < basket.size(); i++) {
-            if (basket.get(i).getCount() > 0) {
+            if (0 < basket.get(i).getCount()) {
                 System.out.println((i + 1) + ". - " + basket.get(i).getName() + " " +
                         basket.get(i).getCount() + " шт." + " - по цене "
                         + basket.get(i).getPrice() + " руб."
@@ -72,5 +86,43 @@ public class Basket {
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
         }
+    }
+
+    public void saveBin(File file) {
+        try (FileOutputStream fos = new FileOutputStream(file);
+             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+            oos.writeObject(basket);
+            oos.flush();
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+
+    public void saveJson(File file) {
+        GsonBuilder builder = new GsonBuilder();
+        Gson gson = builder.create();
+        try (FileWriter fw = new FileWriter(file)) {
+            fw.write(gson.toJson(basket));
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+    public static Basket loadJson(File file) {
+        HashMap<Integer, Product> basket = new HashMap<>();
+        try (FileReader reader = new FileReader(file)) {
+            Scanner scanner = new Scanner(reader);
+            GsonBuilder builder = new GsonBuilder();
+            Gson gson = builder.create();
+            basket = gson.fromJson(scanner.nextLine(), HashMap.class);
+            System.out.println(basket);
+            scanner.close();
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+        }
+        Product[] product = new Product[basket.size()];
+        for (int i=0; i<basket.size(); i++) {
+            product[i] = basket.get(i);
+        }
+        return new Basket(product);
     }
 }
